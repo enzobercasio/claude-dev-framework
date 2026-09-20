@@ -81,10 +81,12 @@ export async function session({
     },
 
     /**
-     * Press the control whose visible text starts with `label`, ignoring leading
-     * icons and trailing chevrons. `index` picks among matches: -1 is the last.
+     * Press the control whose visible text starts with `label`, ignoring leading icons and
+     * trailing chevrons. `index` picks among matches in reading order, and -1 is the last.
+     * The default is the first match, because a label often appears both in the content and in
+     * a tab bar, and tapping the tab navigates away mid-flow, which is confusing to debug.
      */
-    async tap(label, { index = -1, waitMs = 1200 } = {}) {
+    async tap(label, { index = 0, waitMs = 1200 } = {}) {
       const ok = await page.evaluate(
         ({ label, index }) => {
           const clean = (n) =>
