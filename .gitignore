@@ -1,3 +1,10 @@
 node_modules/
 .DS_Store
 *.log
+
+# never commit these, even in a skills repo
+.env
+.env.*
+credentials.json
+*.db
+*.sqlite

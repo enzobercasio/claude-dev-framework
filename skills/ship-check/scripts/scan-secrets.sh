@@ -27,9 +27,16 @@ HIST=$(git log --all --name-only --pretty=format: 2>/dev/null | sort -u | grep -
 [ -n "$HIST" ] && flag "in history: $(echo "$HIST" | tr '\n' ' ')" || note "none"
 
 echo "== Ignore file coverage"
-for pattern in '.env' 'node_modules' '*.db' '*.sqlite' 'credentials.json'; do
-  if git check-ignore -q "$pattern" 2>/dev/null; then note "covers $pattern"; else flag "not ignored: $pattern"; fi
-done
+# Probe with a concrete path for each: a directory pattern written as "node_modules/"
+# only matches a directory, so probing the bare name would report a false gap.
+check_ignored() { # name  probe-path
+  if git check-ignore -q "$2" 2>/dev/null; then note "covers $1"; else flag "not ignored: $1"; fi
+}
+check_ignored ".env" ".env"
+check_ignored "node_modules" "node_modules/pkg/index.js"
+check_ignored "local databases" "data.sqlite"
+check_ignored "backups and exports" "backup.db"
+check_ignored "service credentials" "credentials.json"
 
 echo "== Large tracked files (over 2MB, often data dumps)"
 BIG=$(git ls-files -z | xargs -0 -I{} sh -c 'f="{}"; [ -f "$f" ] && s=$(wc -c <"$f") && [ "$s" -gt 2097152 ] && echo "$f ($((s/1024/1024))MB)"' 2>/dev/null || true)
