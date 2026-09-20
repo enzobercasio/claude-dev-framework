@@ -54,7 +54,7 @@ export async function session({
   });
   const page = await browser.newPage();
   await page.setViewport({ width, height, deviceScaleFactor: 2 });
-  if (dark) await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: 'dark' }]);
+  await page.emulateMediaFeatures([{ name: 'prefers-color-scheme', value: dark ? 'dark' : 'light' }]);
 
   const errors = [];
   page.on('pageerror', (e) => errors.push(`[crash] ${e.message}`));
