@@ -67,6 +67,14 @@ Three things it will tell you that a palette review will not:
 
 Then put the thresholds in a unit test over the palette, covering the pairs the interface actually puts together, at the opacities they are really drawn at. Check the test by restoring the old colours: if it does not fail, it is not testing anything. The browser check finds the problem once; the test keeps it from coming back.
 
+## What a browser structurally cannot find
+
+Some controls are drawn by the operating system inside your layout: date and time pickers, the keyboard, scroll indicators, the caret, the status bar, menus. They take their appearance from the *phone's* setting, not your app's. If your app lets someone choose light or dark independently of the system, every one of these is a bug waiting on the mismatch: an app set to light on a phone set to dark draws white text on your white card and the control disappears.
+
+A browser has none of these controls, so no amount of browser checking will show it. The web build usually substitutes its own element, which has the same bug in a different property, and fixing one does not fix the other.
+
+When the framework offers a theme override, grep for every OS-drawn control and pass it the app's resolved scheme explicitly. Do this as a sweep the first time you find one, rather than fixing them as they are reported, because they are all the same bug and they will be reported one at a time by whoever is using a phone.
+
 ## Then actually look
 
 Read the screenshots. Take the text output as proof the flow ran, and the image as proof it is usable. Check the things tests never cover: does the layout hold at phone width, is anything cut off, is contrast readable in both themes, does the empty state tell a new user what to do, are numbers formatted the way a person writes them.
