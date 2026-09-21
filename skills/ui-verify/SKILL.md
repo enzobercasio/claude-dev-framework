@@ -44,6 +44,29 @@ await s.close();
 
 `tap` matches an accessible control by its visible text, ignoring leading icons. `setField` sets a value the way a framework-controlled input expects. `text()` returns what is on screen, which is what you assert against. Every page error is collected and printed at the end, so a silent crash cannot pass as success.
 
+## Measuring contrast
+
+Eyes adapt. A palette that looks fine to you after an hour of staring at it can be unreadable to someone on a bus in daylight, and the failures cluster where nobody looks: a muted label a fraction under the line, a chip whose own translucent background dims the text it carries, a dark theme built by dimming the light one.
+
+`scripts/contrast.mjs` walks the screens you name and measures every text against the pixels actually behind it:
+
+```bash
+node contrast.mjs http://localhost:8081 / /settings /accounts
+node contrast.mjs http://localhost:8081 / /settings /accounts --dark
+```
+
+Install `pngjs` beside `puppeteer-core`. Run it once per scheme; the two rarely fail in the same places.
+
+Measure pixels, not computed styles. Walking up the DOM for a background colour misses gradients and anything drawn by a sibling, and reports white-on-gradient as white-on-page. A false alarm costs as much attention as a real finding, so the checker has to earn trust.
+
+Three things it will tell you that a palette review will not:
+
+- **Opacity is part of the colour.** A label drawn at 85% on a coloured block is not the colour in your theme file. Text that passes at full opacity can fail as drawn.
+- **A translucent chip changes its own backdrop.** White at 18% over a mid-tone lightens what its white label sits on.
+- **Dark is not light dimmed.** Near black, every hue collapses towards the same grey: tints that are clearly different in light mode can sit at a contrast ratio of 1.0 against each other in dark, which is no difference at all. Dark tints have to be brighter than the surface they sit on.
+
+Then put the thresholds in a unit test over the palette, covering the pairs the interface actually puts together, at the opacities they are really drawn at. Check the test by restoring the old colours: if it does not fail, it is not testing anything. The browser check finds the problem once; the test keeps it from coming back.
+
 ## Then actually look
 
 Read the screenshots. Take the text output as proof the flow ran, and the image as proof it is usable. Check the things tests never cover: does the layout hold at phone width, is anything cut off, is contrast readable in both themes, does the empty state tell a new user what to do, are numbers formatted the way a person writes them.
